@@ -10,6 +10,7 @@ import StatusBadge from '@/components/StatusBadge';
 import QuickReportModal from '@/components/QuickReportModal';
 import NoChangeModal from '@/components/NoChangeModal';
 import ImportModal from '@/components/ImportModal';
+import AddStudentModal from '@/components/AddStudentModal';
 import { exportStudentsToExcel, exportStudentsToPDF } from '@/lib/exportHelper';
 import {
   Search,
@@ -65,17 +66,6 @@ export function MahasiswaContent() {
   const [selectedStudentForNoChange, setSelectedStudentForNoChange] = useState<any>(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
-
-  // Add new student form states
-  const [newNim, setNewNim] = useState('');
-  const [newNama, setNewNama] = useState('');
-  const [newAngkatan, setNewAngkatan] = useState(2021);
-  const [newUtamaId, setNewUtamaId] = useState('');
-  const [newPendampingId, setNewPendampingId] = useState('');
-  const [newJudul, setNewJudul] = useState('');
-  const [newTargetSelesai, setNewTargetSelesai] = useState('');
-  const [addLoading, setAddLoading] = useState(false);
-  const [addError, setAddError] = useState<string | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -201,41 +191,6 @@ export function MahasiswaContent() {
     );
   };
 
-  const handleAddStudentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAddLoading(true);
-    setAddError(null);
-    try {
-      const res = await fetch('/api/students', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nim: newNim.trim(),
-          nama: newNama.trim(),
-          angkatan: newAngkatan,
-          pembimbingUtamaId: newUtamaId || null,
-          pembimbingPendampingId: newPendampingId || null,
-          judulSkripsi: newJudul || null,
-          targetSelesai: newTargetSelesai || null,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal menambahkan mahasiswa.');
-
-      setShowAddModal(false);
-      setNewNim('');
-      setNewNama('');
-      setNewJudul('');
-      fetchData();
-      alert(`Mahasiswa ${data.data.nama} (${data.data.nim}) berhasil ditambahkan.`);
-    } catch (err: any) {
-      setAddError(err.message || 'Terjadi kesalahan sistem.');
-    } finally {
-      setAddLoading(false);
-    }
-  };
-
   const resetFilters = () => {
     setSearch('');
     setSelectedDosen('');
@@ -291,24 +246,25 @@ export function MahasiswaContent() {
               </button>
 
               {currentUser?.role === 'ADMIN' && (
-                <>
-                  <button
-                    onClick={() => setShowImportModal(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 shadow-2xs transition"
-                    title="Impor dari berkas Excel atau CSV"
-                  >
-                    <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
-                    Impor Excel/CSV
-                  </button>
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 rounded-xl text-xs font-semibold text-slate-700 shadow-2xs transition"
+                  title="Impor dari berkas Excel atau CSV"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-blue-600" />
+                  Impor Excel/CSV
+                </button>
+              )}
 
-                  <button
-                    onClick={() => setShowAddModal(true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-unand-800 hover:bg-unand-900 text-white rounded-xl text-xs font-semibold shadow-xs transition"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Tambah Mahasiswa
-                  </button>
-                </>
+              {(currentUser?.role === 'ADMIN' || currentUser?.role === 'KAPRODI' || currentUser?.role === 'DOSEN') && (
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-unand-800 hover:bg-unand-900 text-white rounded-xl text-xs font-semibold shadow-xs transition"
+                  title="Tambahkan data mahasiswa secara manual"
+                >
+                  <Plus className="w-4 h-4 text-gold-400" />
+                  <span>{currentUser?.role === 'DOSEN' ? 'Tambah Mahasiswa Bimbingan' : 'Tambah Mahasiswa'}</span>
+                </button>
               )}
             </div>
           </div>
@@ -840,133 +796,18 @@ export function MahasiswaContent() {
         onSuccess={fetchData}
       />
 
-      {/* Add Student Modal (Admin only) */}
+      {/* Add Student Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
-            <div className="px-6 py-4 bg-unand-900 text-white flex items-center justify-between">
-              <h3 className="font-bold text-base">Tambah Data Mahasiswa Baru</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-white/70 hover:text-white p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddStudentSubmit} className="p-6 space-y-4 text-xs">
-              {addError && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-                  {addError}
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">NIM (Wajib & Unik) *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newNim}
-                    onChange={(e) => setNewNim(e.target.value)}
-                    placeholder="Contoh: 2111122045"
-                    className="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-unand-800"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Angkatan *</label>
-                  <input
-                    type="number"
-                    required
-                    value={newAngkatan}
-                    onChange={(e) => setNewAngkatan(Number(e.target.value))}
-                    className="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-unand-800"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Nama Lengkap Mahasiswa *</label>
-                <input
-                  type="text"
-                  required
-                  value={newNama}
-                  onChange={(e) => setNewNama(e.target.value)}
-                  placeholder="Nama lengkap sesuai data akademik"
-                  className="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-unand-800"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Pembimbing Utama</label>
-                  <select
-                    value={newUtamaId}
-                    onChange={(e) => setNewUtamaId(e.target.value)}
-                    className="w-full border rounded-lg p-2 text-xs bg-white"
-                  >
-                    <option value="">-- Pilih Pembimbing Utama --</option>
-                    {lecturers.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.namaGelar}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Pembimbing Pendamping (Opsional)</label>
-                  <select
-                    value={newPendampingId}
-                    onChange={(e) => setNewPendampingId(e.target.value)}
-                    className="w-full border rounded-lg p-2 text-xs bg-white"
-                  >
-                    <option value="">-- Pilih Pembimbing Pendamping --</option>
-                    {lecturers.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.namaGelar}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Judul Skripsi (Sementara / Definitif)</label>
-                <input
-                  type="text"
-                  value={newJudul}
-                  onChange={(e) => setNewJudul(e.target.value)}
-                  placeholder="Judul skripsi (kosongkan jika belum memiliki topik/judul)"
-                  className="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-unand-800"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Target Penyelesaian Studi</label>
-                <input
-                  type="date"
-                  value={newTargetSelesai}
-                  onChange={(e) => setNewTargetSelesai(e.target.value)}
-                  className="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-unand-800"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 border rounded-xl hover:bg-slate-50 font-medium"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={addLoading}
-                  className="px-5 py-2 bg-unand-800 hover:bg-unand-900 text-white rounded-xl font-semibold shadow-xs transition"
-                >
-                  {addLoading ? 'Menyimpan...' : 'Simpan Mahasiswa'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AddStudentModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          currentUser={currentUser}
+          lecturersList={lecturers}
+          onSuccess={(newStd) => {
+            fetchData();
+            alert(`Mahasiswa ${newStd?.nama || ''} (${newStd?.nim || ''}) berhasil ditambahkan.`);
+          }}
+        />
       )}
     </div>
   );

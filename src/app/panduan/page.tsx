@@ -239,17 +239,33 @@ export default function PanduanPage() {
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
                     <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center">1</span>
-                    Melihat Daftar Mahasiswa Bimbingan Anda
+                    Melihat & Menambahkan Mahasiswa Bimbingan Anda
+                  </div>
+                  <div className="pl-8 text-xs text-slate-600 space-y-2 leading-relaxed">
+                    <p>
+                      Masuk ke menu <strong>"Mahasiswa Bimbingan Saya"</strong> di sidebar kiri. Halaman ini menampilkan seluruh mahasiswa yang Anda bimbing (baik sebagai Pembimbing Utama maupun Pendamping).
+                    </p>
+                    <p>
+                      <strong>Menambahkan Mahasiswa Bimbingan Mandiri:</strong> Tekan tombol <strong>"+ Tambah Mahasiswa Bimbingan"</strong> di bagian atas. Anda dapat memasukkan NIM, Nama, Angkatan, memilih peran bimbingan (Utama/Pendamping), rekan pembimbing, tahapan riset, judul skripsi, dan kontak mahasiswa. Mahasiswa yang didaftarkan akan langsung muncul pada daftar bimbingan Anda.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Langkah 2: Mengisi Kolom Bimbingan */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
+                    <span className="w-6 h-6 rounded-full bg-gold-100 text-gold-900 text-xs flex items-center justify-center">2</span>
+                    Mengisi & Memperbarui Kolom Bimbingan
                   </div>
                   <p className="text-xs text-slate-600 pl-8 leading-relaxed">
-                    Masuk ke menu <strong>"Mahasiswa Bimbingan Saya"</strong> di sidebar kiri. Halaman ini hanya menampilkan mahasiswa yang Anda bimbing (baik sebagai Pembimbing Utama maupun Pendamping). Anda dapat melihat status penanda perhatian mahasiswa secara langsung.
+                    Klik tombol <strong>"Isi Kolom Bimbingan"</strong> pada kartu mahasiswa atau ubah tampilan ke <strong>"Tabel Kolom Bimbingan"</strong> untuk melengkapi data: Judul Skripsi (Draft/Definitif), Bidang/Topik Riset Pangan TPHP, Tahapan Terkini, Target Tanggal Sidang, serta Kontak WhatsApp dan Email mahasiswa.
                   </p>
                 </div>
 
-                {/* Langkah 2 */}
+                {/* Langkah 3 */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
-                    <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center">2</span>
+                    <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs flex items-center justify-center">3</span>
                     Alur Pelaporan Cepat (1 Menit)
                   </div>
                   <div className="pl-8 text-xs text-slate-600 space-y-2 leading-relaxed">
@@ -264,10 +280,10 @@ export default function PanduanPage() {
                   </div>
                 </div>
 
-                {/* Langkah 3 */}
+                {/* Langkah 4 */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
-                    <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs flex items-center justify-center">3</span>
+                    <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 text-xs flex items-center justify-center">4</span>
                     Menggunakan Tombol "Belum Ada Perubahan"
                   </div>
                   <p className="text-xs text-slate-600 pl-8 leading-relaxed">
@@ -275,10 +291,10 @@ export default function PanduanPage() {
                   </p>
                 </div>
 
-                {/* Langkah 4 */}
+                {/* Langkah 5 */}
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm text-slate-900">
-                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-xs flex items-center justify-center">4</span>
+                    <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-xs flex items-center justify-center">5</span>
                     Menghadapi Peringatan Konflik Bersamaan (Kode 409)
                   </div>
                   <p className="text-xs text-slate-600 pl-8 leading-relaxed">

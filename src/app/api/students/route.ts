@@ -217,9 +217,13 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
+      return NextResponse.json({ error: 'Tidak terautentikasi' }, { status: 401 });
+    }
+
+    if (user.role !== 'ADMIN' && user.role !== 'KAPRODI' && user.role !== 'DOSEN') {
       return NextResponse.json(
-        { error: 'Hanya Administrator/Operator Prodi yang berwenang menambah data mahasiswa.' },
+        { error: 'Anda tidak memiliki hak akses untuk menambahkan data mahasiswa.' },
         { status: 403 }
       );
     }
@@ -233,7 +237,9 @@ export async function POST(req: NextRequest) {
       semesterManual,
       pembimbingUtamaId,
       pembimbingPendampingId,
+      peranDosen, // 'utama' | 'pendamping' (khusus bila dosen yang menginput)
       tglPenetapanPembimbing,
+      tahapUtama,
       judulSkripsi,
       bidangPenelitian,
       tglMulaiTugasAkhir,
@@ -262,8 +268,33 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Determine initial stage
-    const initialStage = judulSkripsi ? 'penetapan_judul' : 'penetapan_judul';
+    let finalPembimbingUtamaId = pembimbingUtamaId || null;
+    let finalPembimbingPendampingId = pembimbingPendampingId || null;
+
+    // Jika diinput oleh Dosen Pembimbing, pastikan dosen tersebut terdaftar sebagai pembimbing mahasiswa ini
+    if (user.role === 'DOSEN') {
+      if (!user.lecturerId) {
+        return NextResponse.json(
+          { error: 'Profil dosen Anda belum terhubung dengan akun pengguna.' },
+          { status: 400 }
+        );
+      }
+
+      if (peranDosen === 'pendamping') {
+        finalPembimbingPendampingId = user.lecturerId;
+      } else {
+        // default jika dosen input adalah Pembimbing Utama
+        finalPembimbingUtamaId = user.lecturerId;
+      }
+
+      // Pastikan dosen login menjadi salah satu pembimbing
+      if (finalPembimbingUtamaId !== user.lecturerId && finalPembimbingPendampingId !== user.lecturerId) {
+        finalPembimbingUtamaId = user.lecturerId;
+      }
+    }
+
+    // Tahap awal skripsi
+    const finalTahapUtama = tahapUtama || (judulSkripsi ? 'penetapan_judul' : 'penetapan_judul');
 
     const student = await prisma.student.create({
       data: {
@@ -272,9 +303,9 @@ export async function POST(req: NextRequest) {
         angkatan: parseInt(String(angkatan), 10),
         statusAkademik,
         semesterManual: semesterManual ? parseInt(String(semesterManual), 10) : null,
-        pembimbingUtamaId: pembimbingUtamaId || null,
-        pembimbingPendampingId: pembimbingPendampingId || null,
-        tglPenetapanPembimbing: tglPenetapanPembimbing || null,
+        pembimbingUtamaId: finalPembimbingUtamaId,
+        pembimbingPendampingId: finalPembimbingPendampingId,
+        tglPenetapanPembimbing: tglPenetapanPembimbing || getJakartaDateString(),
         judulSkripsi: judulSkripsi?.trim() || null,
         bidangPenelitian: bidangPenelitian?.trim() || null,
         tglMulaiTugasAkhir: tglMulaiTugasAkhir || null,
@@ -282,9 +313,12 @@ export async function POST(req: NextRequest) {
         email: email?.trim() || null,
         noHp: noHp?.trim() || null,
         catatanAdministratif: catatanAdministratif || null,
-        tahapUtama: initialStage,
+        tahapUtama: finalTahapUtama,
         statusPerhatian: 'belum_cukup_data',
-        alasanPerhatian: 'Data mahasiswa baru didaftarkan; menunggu pelaporan kemajuan dari dosen pembimbing.',
+        alasanPerhatian:
+          user.role === 'DOSEN'
+            ? 'Mahasiswa bimbingan ditambahkan secara manual oleh Dosen Pembimbing.'
+            : 'Data mahasiswa baru didaftarkan; menunggu pelaporan kemajuan dari dosen pembimbing.',
         isDemo: Boolean(isDemo),
         version: 1,
       },
@@ -294,8 +328,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Seed default 6 stages with "belum_dilaporkan" as required by Section 5:
-    // "Data yang belum diisi harus ditampilkan sebagai 'Belum dilaporkan', bukan otomatis 'Belum dimulai'."
+    // Seed default 6 stages
     const defaultStages = [
       { key: 'penetapan_judul', name: 'Penetapan Judul' },
       { key: 'seminar_proposal', name: 'Seminar Proposal' },
@@ -306,12 +339,14 @@ export async function POST(req: NextRequest) {
     ];
 
     for (const stg of defaultStages) {
+      const isCurrentStage = stg.key === finalTahapUtama;
       await prisma.studentStage.create({
         data: {
           studentId: student.id,
           stageKey: stg.key,
           stageName: stg.name,
-          status: 'belum_dilaporkan',
+          status: isCurrentStage ? 'sedang_berjalan' : 'belum_dilaporkan',
+          tglMulai: isCurrentStage ? (tglMulaiTugasAkhir || getJakartaDateString()) : null,
         },
       });
     }
@@ -345,7 +380,10 @@ export async function POST(req: NextRequest) {
           newUtamaNama: student.pembimbingUtama?.namaGelar || '-',
           newPendampingNama: student.pembimbingPendamping?.namaGelar || '-',
           changeDate: tglPenetapanPembimbing || getJakartaDateString(),
-          reason: 'Penetapan pembimbing awal saat pendaftaran mahasiswa.',
+          reason:
+            user.role === 'DOSEN'
+              ? 'Penetapan pembimbing saat pendaftaran bimbingan mandiri oleh dosen.'
+              : 'Penetapan pembimbing awal saat pendaftaran mahasiswa.',
           changedBy: user.name,
         },
       });
@@ -373,7 +411,9 @@ export async function POST(req: NextRequest) {
       action: 'CREATE',
       entity: 'Student',
       entityId: student.id,
-      details: `Menambahkan mahasiswa baru: ${student.nama} (NIM: ${student.nim}).`,
+      details: `${
+        user.role === 'DOSEN' ? `Dosen Pembimbing (${user.name})` : user.role
+      } menambahkan data mahasiswa bimbingan baru secara manual: ${student.nama} (NIM: ${student.nim}).`,
     });
 
     return NextResponse.json({

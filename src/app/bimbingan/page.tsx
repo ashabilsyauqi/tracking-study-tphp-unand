@@ -10,8 +10,10 @@ import StatusBadge from '@/components/StatusBadge';
 import QuickReportModal from '@/components/QuickReportModal';
 import NoChangeModal from '@/components/NoChangeModal';
 import EditBimbinganModal from '@/components/EditBimbinganModal';
+import AddStudentModal from '@/components/AddStudentModal';
 import {
   UserCheck,
+  UserPlus,
   Send,
   Clock,
   Eye,
@@ -44,6 +46,7 @@ export default function BimbinganPage() {
   const [selectedStudentForReport, setSelectedStudentForReport] = useState<any>(null);
   const [selectedStudentForNoChange, setSelectedStudentForNoChange] = useState<any>(null);
   const [selectedStudentForEditColumn, setSelectedStudentForEditColumn] = useState<any>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [demoCount, setDemoCount] = useState(0);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
@@ -119,18 +122,29 @@ export default function BimbinganPage() {
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
           {/* Header */}
-          <div className="bg-gradient-to-r from-unand-950 via-unand-900 to-unand-800 text-white rounded-2xl p-6 shadow-md border border-unand-800">
-            <div className="flex items-center gap-2">
-              <span className="bg-gold-500 text-slate-950 text-xs font-bold px-2.5 py-0.5 rounded tracking-wide uppercase">
-                Menu Khusus Dosen Pembimbing
-              </span>
+          <div className="bg-gradient-to-r from-unand-950 via-unand-900 to-unand-800 text-white rounded-2xl p-6 shadow-md border border-unand-800 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="bg-gold-500 text-slate-950 text-xs font-bold px-2.5 py-0.5 rounded tracking-wide uppercase">
+                  Menu Khusus Dosen Pembimbing
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
+                Mahasiswa Bimbingan Saya
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-2xl leading-relaxed">
+                Daftar seluruh mahasiswa tugas akhir di bawah bimbingan Anda. Anda dapat <strong>menambahkan mahasiswa bimbingan secara manual</strong>, <strong>mengisi & memperbarui kolom bimbingan</strong> (judul, bidang riset, tahap skripsi, target selesai, kontak), serta melakukan <strong>Pelaporan Cepat (1 Menit)</strong> secara berkala.
+              </p>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
-              Mahasiswa Bimbingan Saya
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-200 mt-1 max-w-2xl leading-relaxed">
-              Daftar seluruh mahasiswa tugas akhir di bawah bimbingan Anda. Anda dapat <strong>mengisi & memperbarui kolom bimbingan</strong> (judul, bidang riset, tahap skripsi, target selesai, kontak mahasiswa), serta melakukan <strong>Pelaporan Cepat (1 Menit)</strong> secara berkala.
-            </p>
+
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gold-500 hover:bg-gold-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm shadow-md transition shrink-0"
+              title="Tambahkan Mahasiswa Bimbingan Baru Secara Manual"
+            >
+              <UserPlus className="w-4 h-4 text-slate-950" />
+              <span>+ Tambah Mahasiswa Bimbingan</span>
+            </button>
           </div>
 
           {/* Search, Filter & View Mode Toolbar */}
@@ -219,8 +233,15 @@ export default function BimbinganPage() {
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 {currentUser?.role === 'ADMIN'
                   ? 'Anda masuk sebagai Admin. Pilih akun Dosen pada tombol "Uji Peran" di atas untuk melihat tampilan spesifik per dosen.'
-                  : 'Belum ada mahasiswa yang ditugaskan kepada Anda atau sesuai dengan filter pencarian.'}
+                  : 'Belum ada mahasiswa bimbingan yang tercatat untuk Anda.'}
               </p>
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="mt-4 px-4 py-2 bg-unand-800 hover:bg-unand-900 text-white font-semibold rounded-xl text-xs transition inline-flex items-center gap-1.5 shadow-xs"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-gold-400" />
+                <span>+ Tambah Mahasiswa Bimbingan Sekarang</span>
+              </button>
             </div>
           ) : viewMode === 'grid' ? (
             /* 1. Tampilan Kartu (Grid View) */
@@ -545,6 +566,19 @@ export default function BimbinganPage() {
           )}
         </main>
       </div>
+
+      {/* Add Student Modal */}
+      {showAddModal && (
+        <AddStudentModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          currentUser={currentUser}
+          onSuccess={(newStd) => {
+            fetchData();
+            showNotification(`Mahasiswa ${newStd?.nama || ''} berhasil ditambahkan ke daftar bimbingan Anda!`);
+          }}
+        />
+      )}
 
       {/* Edit Bimbingan Column Modal */}
       {selectedStudentForEditColumn && (
