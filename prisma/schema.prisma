@@ -1,0 +1,242 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          String   @id @default(cuid())
+  username    String   @unique
+  name        String
+  email       String?
+  password    String
+  role        String   // ADMIN, KAPRODI, DOSEN
+  lecturerId  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  lecturer    Lecturer? @relation(fields: [lecturerId], references: [id])
+  reports     ProgressReport[]
+  auditLogs   AuditLog[]
+}
+
+model Lecturer {
+  id              String   @id @default(cuid())
+  nip             String?  @unique
+  namaGelar       String
+  email           String?
+  noHp            String?
+  bidangKeahlian  String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  users           User[]
+  mahasiswaUtama      Student[] @relation("PembimbingUtama")
+  mahasiswaPendamping Student[] @relation("PembimbingPendamping")
+}
+
+model Student {
+  id                    String   @id @default(cuid())
+  nim                   String   @unique
+  nama                  String
+  angkatan              Int
+  prodi                 String   @default("Teknologi Pangan dan Hasil Pertanian")
+  statusAkademik        String   @default("aktif") // aktif, cuti, lulus, mengundurkan_diri, lainnya
+  semesterManual        Int?
+  semesterCuti          Int      @default(0)
+  pembimbingUtamaId     String?
+  pembimbingPendampingId String?
+  tglPenetapanPembimbing String?
+  judulSkripsi          String?
+  bidangPenelitian      String?
+  tglMulaiTugasAkhir    String?
+  targetSelesai         String?
+  email                 String?
+  noHp                  String?
+  catatanAdministratif  String?
+  isDemo                Boolean  @default(false)
+  isArchived            Boolean  @default(false)
+  version               Int      @default(1)
+  tglLaporanTerakhir    String?
+  tglKemajuanSubstantif String?
+  statusPerhatian       String   @default("belum_cukup_data") // sesuai_rencana, perlu_pembaruan, perlu_perhatian, prioritas, belum_cukup_data
+  alasanPerhatian       String?
+  tahapUtama            String   @default("penetapan_judul")
+  lulusAdministratif    Boolean  @default(false)
+  tglLulusAdministratif String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  pembimbingUtama       Lecturer? @relation("PembimbingUtama", fields: [pembimbingUtamaId], references: [id])
+  pembimbingPendamping  Lecturer? @relation("PembimbingPendamping", fields: [pembimbingPendampingId], references: [id])
+  stages                StudentStage[]
+  chapters              ThesisChapterProgress[]
+  reports               ProgressReport[]
+  advisorHistory        AdvisorAssignmentHistory[]
+  titleHistory          TitleHistory[]
+  followUps             FollowUpAction[]
+  attachments           Attachment[]
+}
+
+model AdvisorAssignmentHistory {
+  id                String   @id @default(cuid())
+  studentId         String
+  oldUtamaNama      String?
+  oldPendampingNama String?
+  newUtamaNama      String?
+  newPendampingNama String?
+  changeDate        String
+  reason            String
+  changedBy         String
+  createdAt         DateTime @default(now())
+
+  student           Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model TitleHistory {
+  id          String   @id @default(cuid())
+  studentId   String
+  oldTitle    String?
+  newTitle    String
+  statusJudul String   // sementara, definitif
+  changeDate  String
+  reason      String
+  changedBy   String
+  createdAt   DateTime @default(now())
+
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model StudentStage {
+  id               String   @id @default(cuid())
+  studentId        String
+  stageKey         String   // penetapan_judul, seminar_proposal, penelitian, penulisan_skripsi, seminar_hasil, ujian_sarjana
+  stageName        String
+  status           String   @default("belum_dilaporkan") // belum_dilaporkan, belum_dimulai, sedang_berjalan, menunggu_jadwal, selesai, tertunda
+  tglMulai         String?
+  targetSelesai    String?
+  tglSelesaiAktual String?
+  catatan          String?
+  buktiPendukung   String?
+  isRetrospektif   Boolean  @default(false)
+  detailJson       String?  // status_judul, status_revisi, hasil_ujian, status_persiapan, etc.
+  updatedAt        DateTime @updatedAt
+
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model ThesisChapterProgress {
+  id           String   @id @default(cuid())
+  studentId    String
+  chapterNum   Int
+  chapterName  String   // Bab I, Bab II, Bab III, Bab IV, Bab V
+  status       String   @default("belum_dimulai") // belum_dimulai, draf, ditinjau_pembimbing, revisi, disetujui
+  tglDraf      String?
+  tglRevisi    String?
+  tglDisetujui String?
+  catatan      String?
+  updatedAt    DateTime @updatedAt
+
+  student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model ProgressReport {
+  id                       String   @id @default(cuid())
+  studentId                String
+  reporterId               String
+  reporterName             String
+  reporterRole             String
+  tglLaporan               String   // YYYY-MM-DD HH:mm (Asia/Jakarta)
+  tglKondisi               String
+  substantiveProgressDate  String?
+  isNoChange               Boolean  @default(false)
+  noChangeReason           String?
+  noChangeNextPlan         String?
+  ringkasanKemajuan        String?
+  tglBimbinganTerakhir     String?
+  hambatanUtama            String?
+  tindakanBerikutnya       String?
+  penanggungJawabTindakan  String?
+  targetTindakLanjut       String?
+  kebutuhanBantuanProdi    Boolean  @default(false)
+  kebutuhanBantuanCatatan  String?
+  attachmentsJson          String?
+  isRetrospektif           Boolean  @default(false)
+  createdAt                DateTime @default(now())
+
+  student                  Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  reporter                 User     @relation(fields: [reporterId], references: [id])
+}
+
+model FollowUpAction {
+  id                    String   @id @default(cuid())
+  studentId             String
+  masalah               String
+  tindakanDisepakati    String
+  penanggungJawab       String
+  tenggat               String
+  status                String   @default("terbuka") // terbuka, sedang_ditangani, selesai
+  hasilTindakLanjut     String?
+  tglEvaluasiBerikutnya String?
+  createdByName         String
+  resolvedAt            String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  student               Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Attachment {
+  id             String   @id @default(cuid())
+  studentId      String
+  fileName       String
+  fileUrl        String
+  fileType       String?
+  fileSize       Int?
+  uploadedByName String
+  isPrivate      Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         String   @id @default(cuid())
+  userId     String?
+  targetRole String?  // ALL, ADMIN, KAPRODI, DOSEN, or specific userId
+  title      String
+  message    String
+  type       String   // reminder, overdue, assistance_request, follow_up, info
+  linkUrl    String?
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Setting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  userId         String?
+  userName       String
+  userRole       String
+  action         String   // CREATE, UPDATE, DELETE, IMPORT, EXPORT, REPORT, LOGIN
+  entity         String   // Student, Lecturer, Report, Setting, FollowUp, User
+  entityId       String?
+  details        String?
+  alasanPerubahan String?
+  ipAddress      String?
+  createdAt      DateTime @default(now())
+
+  user           User?    @relation(fields: [userId], references: [id])
+}
