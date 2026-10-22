@@ -200,7 +200,7 @@ export default function DashboardPage() {
               >
                 <img
                   src="/beranda-kegiatan.jpg"
-                  alt="Koordinasi Tim Dosen & Evaluasi Bimbingan Tugas Akhir TPHP FATETA UNAND"
+                  alt="TPHP go Global to Prince of Songkla University, Thailand"
                   className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500 ease-out"
                 />
 
@@ -233,7 +233,7 @@ export default function DashboardPage() {
                   <div className="min-w-0">
                     <h3 className="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5 truncate">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-                      Rapat Koordinasi & Evaluasi Tugas Akhir Mahasiswa
+                      TPHP go Global to Prince of Songkla University, Thailand
                     </h3>
                     <p className="text-[11px] text-slate-500 mt-0.5 truncate">
                       Program Studi Teknologi Pangan dan Hasil Pertanian &bull; FATETA Universitas Andalas
@@ -744,7 +744,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-sm sm:text-base text-white">
-                    Dokumentasi Koordinasi Tim Dosen & Evaluasi Tugas Akhir
+                    TPHP go Global to Prince of Songkla University, Thailand
                   </h3>
                   <p className="text-[11px] text-slate-400">
                     Program Studi Teknologi Pangan dan Hasil Pertanian &bull; FATETA Universitas Andalas
@@ -765,7 +765,7 @@ export default function DashboardPage() {
             <div className="p-2 sm:p-4 bg-black/90 flex items-center justify-center overflow-auto flex-1">
               <img
                 src="/beranda-kegiatan.jpg"
-                alt="Dokumentasi Koordinasi Tim Dosen FATETA UNAND - Resolusi Penuh"
+                alt="TPHP go Global to Prince of Songkla University, Thailand - Resolusi Penuh"
                 className="max-h-[72vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
               />
             </div>

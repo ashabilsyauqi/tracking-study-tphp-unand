@@ -180,6 +180,24 @@ export function exportStudentsToPDF(
     }
   });
 
+  // Lembar Pengesahan / Tanda Tangan Mengetahui Ketua Program Studi
+  const finalY = (doc as any).lastAutoTable?.finalY || 160;
+  let signY = finalY + 10;
+  if (signY + 36 > doc.internal.pageSize.height - 14) {
+    doc.addPage();
+    signY = 25;
+  }
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(30, 41, 59);
+  doc.text(`Padang, ${formatJakartaDate(new Date())}`, 297 - 14 - 75, signY);
+  doc.text('Mengetahui,', 24, signY + 5);
+  doc.text('Ketua Program Studi TPHP', 24, signY + 9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Prof. Dr. Novizar Nazir', 24, signY + 28);
+  doc.setFont('helvetica', 'normal');
+  doc.text('NIP. 196411251989111001', 24, signY + 32);
+
   doc.save(filename);
 }
 
@@ -416,9 +434,9 @@ export function exportBahanRapatPDF(params: {
 
   // Blank signature space
   doc.setFont('helvetica', 'bold');
-  doc.text('Dr. Daimon Syukri, S.Si, M.Si', margin + 10, signY + 28);
+  doc.text('Prof. Dr. Novizar Nazir', margin + 10, signY + 28);
   doc.setFont('helvetica', 'normal');
-  doc.text('NIP. 198007252008121002', margin + 10, signY + 32);
+  doc.text('NIP. 196411251989111001', margin + 10, signY + 32);
 
   doc.setFont('helvetica', 'bold');
   doc.text(generatedBy || 'Tim Evaluasi Akademik', pageWidth - margin - 75, signY + 28);

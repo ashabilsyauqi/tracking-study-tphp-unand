@@ -114,8 +114,8 @@ export default function LoginPage() {
               </div>
             </div>
             <div className="px-3 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-              <span className="font-medium truncate">Koordinasi & Evaluasi Tugas Akhir Mahasiswa TPHP</span>
-              <span className="text-[10px] text-slate-400 font-mono shrink-0">Padang</span>
+              <span className="font-medium truncate">TPHP go Global to Prince of Songkla University, Thailand</span>
+              <span className="text-[10px] text-slate-400 font-mono shrink-0">Thailand</span>
             </div>
           </div>
 
