@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronRight,
   ClipboardList,
+  BookOpen,
 } from 'lucide-react';
 
 interface Props {
@@ -73,6 +74,12 @@ export default function Sidebar({ userRole }: Props) {
       href: '/pengaturan',
       icon: Settings,
       roles: ['ADMIN'], // Only Administrator
+    },
+    {
+      title: '9. Panduan Penggunaan',
+      href: '/panduan',
+      icon: BookOpen,
+      roles: ['ADMIN', 'KAPRODI', 'DOSEN'],
     },
   ];
 

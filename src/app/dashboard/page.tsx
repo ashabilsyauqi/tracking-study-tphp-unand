@@ -300,13 +300,22 @@ export default function DashboardPage() {
                     <span>Bimbingan Saya</span>
                   </button>
                 </div>
-                <button
-                  onClick={() => router.push('/pelaporan')}
-                  className="w-full text-center text-xs text-emerald-200 hover:text-white py-1 transition flex items-center justify-center gap-1"
-                >
-                  <Calendar className="w-3.5 h-3.5 text-gold-300" />
-                  <span>Lihat Kronologi Log Pelaporan Dosen &rarr;</span>
-                </button>
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-emerald-200">
+                  <button
+                    onClick={() => router.push('/pelaporan')}
+                    className="hover:text-white transition flex items-center gap-1"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-gold-300" />
+                    <span>Log Pelaporan Dosen &rarr;</span>
+                  </button>
+                  <Link
+                    href="/panduan"
+                    className="hover:text-gold-300 font-semibold transition flex items-center gap-1 bg-white/10 hover:bg-white/20 px-2.5 py-1 rounded-lg border border-white/15 text-white"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-gold-300" />
+                    <span>Panduan Penggunaan</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>

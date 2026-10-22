@@ -12,6 +12,7 @@ import {
   ChevronDown,
   Shield,
   BookOpen,
+  HelpCircle,
 } from 'lucide-react';
 import NotificationModal from './NotificationModal';
 
@@ -162,6 +163,16 @@ export default function Navbar({ user, onUserSwitch }: Props) {
                 </div>
               )}
             </div>
+
+            {/* Panduan Penggunaan Button */}
+            <Link
+              href="/panduan"
+              className="p-1.5 sm:px-2.5 sm:py-1.5 text-slate-200 hover:text-white hover:bg-unand-900 rounded-lg transition flex items-center gap-1.5 text-xs border border-transparent hover:border-unand-700"
+              title="Buku Panduan Penggunaan TPHP StudyTrack"
+            >
+              <HelpCircle className="w-4 h-4 text-gold-300" />
+              <span className="hidden sm:inline font-semibold text-slate-200">Panduan</span>
+            </Link>
 
             {/* Notification Bell */}
             <button
