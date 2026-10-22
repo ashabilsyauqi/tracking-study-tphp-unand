@@ -1,0 +1,13 @@
+services:
+  tphp-studytrack:
+    build: .
+    container_name: tphp-studytrack-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/prisma/tphp_studytrack.db
+      - JWT_SECRET=tphp-unand-studytrack-supersecret-jwt-key-2025
+      - PORT=3000
+    volumes:
+      - ./prisma/tphp_studytrack.db:/app/prisma/tphp_studytrack.db
