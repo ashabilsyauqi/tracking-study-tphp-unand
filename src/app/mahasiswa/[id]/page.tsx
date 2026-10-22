@@ -8,6 +8,7 @@ import Sidebar from '@/components/Sidebar';
 import StatusBadge from '@/components/StatusBadge';
 import QuickReportModal from '@/components/QuickReportModal';
 import NoChangeModal from '@/components/NoChangeModal';
+import EditBimbinganModal from '@/components/EditBimbinganModal';
 import ProgressEstimator from '@/components/ProgressEstimator';
 import {
   ArrowLeft,
@@ -24,6 +25,7 @@ import {
   ListTodo,
   Paperclip,
   Edit,
+  Edit3,
   ShieldAlert,
   Info,
   Check,
@@ -46,6 +48,7 @@ export default function StudentDetailPage() {
   const [showReportModal, setShowReportModal] = useState(false);
   const [showNoChangeModal, setShowNoChangeModal] = useState(false);
   const [showEditAdminModal, setShowEditAdminModal] = useState(false);
+  const [showEditBimbinganModal, setShowEditBimbinganModal] = useState(false);
 
   // Admin edit form states
   const [editNama, setEditNama] = useState('');
@@ -216,6 +219,17 @@ export default function StudentDetailPage() {
                 <Send className="w-3.5 h-3.5" />
                 Lapor Kemajuan Cepat (1 Menit)
               </button>
+
+              {(student?.isSupervisor || currentUser?.role === 'ADMIN' || currentUser?.role === 'KAPRODI') && (
+                <button
+                  onClick={() => setShowEditBimbinganModal(true)}
+                  className="px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-semibold rounded-xl shadow-2xs transition flex items-center gap-1.5"
+                  title="Isi Judul Skripsi, Bidang Riset, Tahapan, Target, dan Kontak Mahasiswa"
+                >
+                  <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+                  Isi Kolom Bimbingan
+                </button>
+              )}
 
               {(currentUser?.role === 'ADMIN' || currentUser?.role === 'KAPRODI') && (
                 <button
@@ -733,6 +747,20 @@ export default function StudentDetailPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Edit Bimbingan Modal */}
+      {showEditBimbinganModal && student && (
+        <EditBimbinganModal
+          isOpen={showEditBimbinganModal}
+          onClose={() => setShowEditBimbinganModal(false)}
+          student={student}
+          currentLecturerId={currentUser?.lecturerId}
+          onSuccess={() => {
+            fetchStudentData();
+            alert('Kolom bimbingan mahasiswa berhasil diperbarui!');
+          }}
+        />
       )}
     </div>
   );

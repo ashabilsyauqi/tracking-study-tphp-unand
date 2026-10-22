@@ -150,10 +150,25 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const { id } = params;
 
-    // Only Admin or Kaprodi can update administrative data
-    if (user.role !== 'ADMIN' && user.role !== 'KAPRODI') {
+    const currentStudent = await prisma.student.findUnique({
+      where: { id },
+      include: { pembimbingUtama: true, pembimbingPendamping: true },
+    });
+
+    if (!currentStudent || currentStudent.isArchived) {
+      return NextResponse.json({ error: 'Mahasiswa tidak ditemukan.' }, { status: 404 });
+    }
+
+    // Role check: Admin, Kaprodi, OR the student's supervisors (Pembimbing Utama / Pendamping)
+    const isSupervisor =
+      user.role === 'DOSEN' &&
+      user.lecturerId &&
+      (currentStudent.pembimbingUtamaId === user.lecturerId ||
+        currentStudent.pembimbingPendampingId === user.lecturerId);
+
+    if (user.role !== 'ADMIN' && user.role !== 'KAPRODI' && !isSupervisor) {
       return NextResponse.json(
-        { error: 'Hanya Administrator atau Ketua Prodi yang dapat memperbarui data administratif.' },
+        { error: 'Hanya Administrator, Ketua Prodi, atau Dosen Pembimbing mahasiswa ini yang dapat memperbarui data.' },
         { status: 403 }
       );
     }
@@ -170,6 +185,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       tglPenetapanPembimbing,
       judulSkripsi,
       bidangPenelitian,
+      tahapUtama,
       tglMulaiTugasAkhir,
       targetSelesai,
       email,
@@ -181,20 +197,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       tglLulusAdministratif,
     } = body;
 
-    if (!alasanPerubahan || !alasanPerubahan.trim()) {
+    const finalAlasanPerubahan =
+      alasanPerubahan && alasanPerubahan.trim()
+        ? alasanPerubahan.trim()
+        : isSupervisor
+        ? 'Pembaruan kolom bimbingan oleh Dosen Pembimbing'
+        : '';
+
+    if (!finalAlasanPerubahan) {
       return NextResponse.json(
         { error: 'Alasan perubahan wajib dicatat sesuai prosedur audit administratif prodi.' },
         { status: 400 }
       );
-    }
-
-    const currentStudent = await prisma.student.findUnique({
-      where: { id },
-      include: { pembimbingUtama: true, pembimbingPendamping: true },
-    });
-
-    if (!currentStudent || currentStudent.isArchived) {
-      return NextResponse.json({ error: 'Mahasiswa tidak ditemukan.' }, { status: 404 });
     }
 
     // Optimistic Concurrency Control
@@ -210,10 +224,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       );
     }
 
-    // Check if advisors changed -> Record Advisor Assignment History
+    // Check if advisors changed -> Record Advisor Assignment History (Only Admin or Kaprodi can reassign)
+    const canChangeAdvisors = user.role === 'ADMIN' || user.role === 'KAPRODI';
     const advisorsChanged =
-      (pembimbingUtamaId !== undefined && pembimbingUtamaId !== currentStudent.pembimbingUtamaId) ||
-      (pembimbingPendampingId !== undefined && pembimbingPendampingId !== currentStudent.pembimbingPendampingId);
+      canChangeAdvisors &&
+      ((pembimbingUtamaId !== undefined && pembimbingUtamaId !== currentStudent.pembimbingUtamaId) ||
+        (pembimbingPendampingId !== undefined && pembimbingPendampingId !== currentStudent.pembimbingPendampingId));
 
     if (advisorsChanged) {
       const newUtama = pembimbingUtamaId
@@ -231,7 +247,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           newUtamaNama: newUtama?.namaGelar || '-',
           newPendampingNama: newPendamping?.namaGelar || '-',
           changeDate: getJakartaDateString(),
-          reason: alasanPerubahan.trim(),
+          reason: finalAlasanPerubahan,
           changedBy: user.name,
         },
       });
@@ -250,9 +266,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
           newTitle: judulSkripsi.trim(),
           statusJudul: 'definitif',
           changeDate: getJakartaDateString(),
-          reason: alasanPerubahan.trim(),
+          reason: finalAlasanPerubahan,
           changedBy: user.name,
         },
+      });
+    }
+
+    // If tahapUtama changed, also sync stage status
+    if (tahapUtama && tahapUtama !== currentStudent.tahapUtama) {
+      await prisma.studentStage.updateMany({
+        where: { studentId: id, stageKey: tahapUtama },
+        data: { status: 'sedang_berjalan' },
       });
     }
 
@@ -260,23 +284,54 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const updated = await prisma.student.update({
       where: { id },
       data: {
-        nama: nama ? nama.trim() : currentStudent.nama,
-        angkatan: angkatan ? parseInt(String(angkatan), 10) : currentStudent.angkatan,
-        statusAkademik: statusAkademik || currentStudent.statusAkademik,
-        semesterManual: semesterManual !== undefined ? (semesterManual ? parseInt(String(semesterManual), 10) : null) : currentStudent.semesterManual,
-        semesterCuti: semesterCuti !== undefined ? parseInt(String(semesterCuti), 10) : currentStudent.semesterCuti,
-        pembimbingUtamaId: pembimbingUtamaId !== undefined ? pembimbingUtamaId : currentStudent.pembimbingUtamaId,
-        pembimbingPendampingId: pembimbingPendampingId !== undefined ? pembimbingPendampingId : currentStudent.pembimbingPendampingId,
-        tglPenetapanPembimbing: tglPenetapanPembimbing !== undefined ? tglPenetapanPembimbing : currentStudent.tglPenetapanPembimbing,
+        nama: canChangeAdvisors && nama ? nama.trim() : currentStudent.nama,
+        angkatan: canChangeAdvisors && angkatan ? parseInt(String(angkatan), 10) : currentStudent.angkatan,
+        statusAkademik: canChangeAdvisors && statusAkademik ? statusAkademik : currentStudent.statusAkademik,
+        semesterManual: canChangeAdvisors
+          ? semesterManual !== undefined
+            ? semesterManual
+              ? parseInt(String(semesterManual), 10)
+              : null
+            : currentStudent.semesterManual
+          : currentStudent.semesterManual,
+        semesterCuti: canChangeAdvisors
+          ? semesterCuti !== undefined
+            ? parseInt(String(semesterCuti), 10)
+            : currentStudent.semesterCuti
+          : currentStudent.semesterCuti,
+        pembimbingUtamaId: canChangeAdvisors
+          ? pembimbingUtamaId !== undefined
+            ? pembimbingUtamaId
+            : currentStudent.pembimbingUtamaId
+          : currentStudent.pembimbingUtamaId,
+        pembimbingPendampingId: canChangeAdvisors
+          ? pembimbingPendampingId !== undefined
+            ? pembimbingPendampingId
+            : currentStudent.pembimbingPendampingId
+          : currentStudent.pembimbingPendampingId,
+        tglPenetapanPembimbing: canChangeAdvisors
+          ? tglPenetapanPembimbing !== undefined
+            ? tglPenetapanPembimbing
+            : currentStudent.tglPenetapanPembimbing
+          : currentStudent.tglPenetapanPembimbing,
         judulSkripsi: judulSkripsi !== undefined ? (judulSkripsi ? judulSkripsi.trim() : null) : currentStudent.judulSkripsi,
-        bidangPenelitian: bidangPenelitian !== undefined ? bidangPenelitian?.trim() : currentStudent.bidangPenelitian,
+        bidangPenelitian: bidangPenelitian !== undefined ? (bidangPenelitian ? bidangPenelitian.trim() : null) : currentStudent.bidangPenelitian,
+        tahapUtama: tahapUtama !== undefined ? tahapUtama : currentStudent.tahapUtama,
         tglMulaiTugasAkhir: tglMulaiTugasAkhir !== undefined ? tglMulaiTugasAkhir : currentStudent.tglMulaiTugasAkhir,
         targetSelesai: targetSelesai !== undefined ? targetSelesai : currentStudent.targetSelesai,
-        email: email !== undefined ? email?.trim() : currentStudent.email,
-        noHp: noHp !== undefined ? noHp?.trim() : currentStudent.noHp,
+        email: email !== undefined ? (email ? email.trim() : null) : currentStudent.email,
+        noHp: noHp !== undefined ? (noHp ? noHp.trim() : null) : currentStudent.noHp,
         catatanAdministratif: catatanAdministratif !== undefined ? catatanAdministratif : currentStudent.catatanAdministratif,
-        lulusAdministratif: lulusAdministratif !== undefined ? Boolean(lulusAdministratif) : currentStudent.lulusAdministratif,
-        tglLulusAdministratif: tglLulusAdministratif !== undefined ? tglLulusAdministratif : currentStudent.tglLulusAdministratif,
+        lulusAdministratif: canChangeAdvisors
+          ? lulusAdministratif !== undefined
+            ? Boolean(lulusAdministratif)
+            : currentStudent.lulusAdministratif
+          : currentStudent.lulusAdministratif,
+        tglLulusAdministratif: canChangeAdvisors
+          ? tglLulusAdministratif !== undefined
+            ? tglLulusAdministratif
+            : currentStudent.tglLulusAdministratif
+          : currentStudent.tglLulusAdministratif,
         version: currentStudent.version + 1,
       },
       include: {
@@ -292,14 +347,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       action: 'UPDATE',
       entity: 'Student',
       entityId: id,
-      alasanPerubahan: alasanPerubahan.trim(),
-      details: `Pembaruan data administratif mahasiswa ${updated.nama} (${updated.nim}).`,
+      alasanPerubahan: finalAlasanPerubahan,
+      details: isSupervisor
+        ? `Dosen ${user.name} memperbarui kolom bimbingan mahasiswa ${updated.nama} (${updated.nim}).`
+        : `Pembaruan data administratif mahasiswa ${updated.nama} (${updated.nim}).`,
     });
 
     return NextResponse.json({
       success: true,
       data: updated,
-      message: 'Data administratif mahasiswa berhasil diperbarui.',
+      message: 'Data mahasiswa berhasil diperbarui.',
     });
   } catch (error: any) {
     console.error('Error updating student:', error);
