@@ -14,8 +14,11 @@
 - Menyediakan tombol khusus **"Belum Ada Perubahan"** yang memperbarui tanggal pelaporan tanpa memajukan tanggal kemajuan substantif.
 - Mengidentifikasi hambatan dini mahasiswa (perlu perhatian / prioritas pendampingan).
 - Mencegah penimpaan data tanpa sengaja saat dua pembimbing mengedit bersamaan (*Optimistic Concurrency Control*).
-- Menyediakan **Showcase Beranda Interaktif**: Foto kegiatan dan koordinasi akademik FATETA UNAND dalam rasio asli 16:9 tanpa pemotongan dengan fitur *lightbox modal zoom* resolusi penuh.
-- Menyediakan **Resume Eksekutif & Unduh Bahan Rapat Evaluasi (PDF)**: Dokumen resmi siap cetak dalam 1 file PDF terpadu (Kop surat resmi, resume statistik, rekomendasi kebijakan rapat, matriks rinci mahasiswa prioritas, dan lembar pengesahan tanda tangan ketua prodi).
+- Menyediakan **Pendaftaran Mahasiswa Mandiri oleh Dosen Pembimbing**: Setiap dosen dapat mendaftarkan mahasiswa bimbingannya secara langsung melalui tombol *"+ Tambah Mahasiswa Bimbingan"*.
+- Menyediakan **Pengisian Kolom Bimbingan Terpadu**: Dosen pembimbing dapat mengisi judul skripsi definitif, topik penelitian pangan, tahapan, target sidang, dan kontak WhatsApp/email mahasiswa dalam format Tampilan Kartu maupun Tabel Kolom Bimbingan.
+- Menyediakan **Halaman Panduan Penggunaan Interaktif (`/panduan`)**: Dokumentasi sistem interaktif per peran (Admin, Kaprodi, Dosen) dengan fitur pencarian cepat.
+- Menyediakan **Showcase Beranda Interaktif**: Foto kegiatan FATETA UNAND *"TPHP go Global to Prince of Songkla University, Thailand"* dalam rasio 16:9 dengan *lightbox zoom*.
+- Menyediakan **Resume Eksekutif & Unduh Bahan Rapat Evaluasi (PDF)**: Dokumen resmi siap cetak dalam 1 file PDF terpadu (Kop surat resmi, resume statistik, rekomendasi rapat, matriks rinci mahasiswa prioritas, dan lembar pengesahan tanda tangan Ketua Prodi: **Prof. Dr. Novizar Nazir**, NIP 196411251989111001).
 - Menghasilkan laporan dan ekspor resmi ke format **Excel (.xlsx)** dan **PDF**.
 
 ---
@@ -161,6 +164,11 @@ Sistem dilengkapi **Mode Data Demonstrasi** dengan 30 mahasiswa fiktif yang mewa
    - Tindakan ini memperbarui tanggal lapor hari ini tanpa memajukan tanggal kemajuan substantif.
 5. **Peringatan Konflik Bersamaan**:
    - Jika rekan pembimbing lain memperbarui mahasiswa tersebut saat Anda membuka formulir, sistem mendeteksi konflik versi (kode 409) dan menampilkan perbedaan terbaru sebelum Anda menyimpan. Data tidak akan tertimpa secara diam-diam.
+6. **Tambah Mahasiswa Bimbingan Mandiri**:
+   - Klik tombol **"+ Tambah Mahasiswa Bimbingan"** untuk mendaftarkan mahasiswa bimbingan baru secara manual.
+   - Masukkan NIM, Nama, Angkatan, pilih peran (Utama/Pendamping), rekan pembimbing, tahapan, target sidang, dan kontak WhatsApp/email.
+7. **Isi & Pembaruan Kolom Bimbingan**:
+   - Klik tombol **"Isi Kolom Bimbingan"** pada kartu mahasiswa atau aktifkan tombol **"Tabel Kolom Bimbingan"** untuk memperbarui judul skripsi, topik riset pangan, tahapan, target sidang, dan kontak mahasiswa dalam format tabel terpadu.
 
 ---
 
