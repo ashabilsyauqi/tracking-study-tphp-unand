@@ -62,7 +62,7 @@ export default function PengaturanPage() {
         return;
       }
       const userData = await userRes.json();
-      if (userData.user.role !== 'ADMIN') {
+      if (userData.user.role !== 'ADMIN' && userData.user.role !== 'KAPRODI') {
         router.push('/dashboard');
         return;
       }

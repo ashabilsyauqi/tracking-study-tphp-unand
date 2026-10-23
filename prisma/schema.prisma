@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -52,20 +52,20 @@ model Student {
   pembimbingUtamaId     String?
   pembimbingPendampingId String?
   tglPenetapanPembimbing String?
-  judulSkripsi          String?
+  judulSkripsi          String?  @db.Text
   bidangPenelitian      String?
   tglMulaiTugasAkhir    String?
   targetSelesai         String?
   email                 String?
   noHp                  String?
-  catatanAdministratif  String?
+  catatanAdministratif  String?  @db.Text
   isDemo                Boolean  @default(false)
   isArchived            Boolean  @default(false)
   version               Int      @default(1)
   tglLaporanTerakhir    String?
   tglKemajuanSubstantif String?
   statusPerhatian       String   @default("belum_cukup_data") // sesuai_rencana, perlu_pembaruan, perlu_perhatian, prioritas, belum_cukup_data
-  alasanPerhatian       String?
+  alasanPerhatian       String?  @db.Text
   tahapUtama            String   @default("penetapan_judul")
   lulusAdministratif    Boolean  @default(false)
   tglLulusAdministratif String?
@@ -91,7 +91,7 @@ model AdvisorAssignmentHistory {
   newUtamaNama      String?
   newPendampingNama String?
   changeDate        String
-  reason            String
+  reason            String   @db.Text
   changedBy         String
   createdAt         DateTime @default(now())
 
@@ -101,11 +101,11 @@ model AdvisorAssignmentHistory {
 model TitleHistory {
   id          String   @id @default(cuid())
   studentId   String
-  oldTitle    String?
-  newTitle    String
+  oldTitle    String?  @db.Text
+  newTitle    String   @db.Text
   statusJudul String   // sementara, definitif
   changeDate  String
-  reason      String
+  reason      String   @db.Text
   changedBy   String
   createdAt   DateTime @default(now())
 
@@ -121,10 +121,10 @@ model StudentStage {
   tglMulai         String?
   targetSelesai    String?
   tglSelesaiAktual String?
-  catatan          String?
-  buktiPendukung   String?
+  catatan          String?  @db.Text
+  buktiPendukung   String?  @db.Text
   isRetrospektif   Boolean  @default(false)
-  detailJson       String?  // status_judul, status_revisi, hasil_ujian, status_persiapan, etc.
+  detailJson       String?  @db.Text // status_judul, status_revisi, hasil_ujian, status_persiapan, etc.
   updatedAt        DateTime @updatedAt
 
   student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -139,7 +139,7 @@ model ThesisChapterProgress {
   tglDraf      String?
   tglRevisi    String?
   tglDisetujui String?
-  catatan      String?
+  catatan      String?  @db.Text
   updatedAt    DateTime @updatedAt
 
   student      Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
@@ -155,17 +155,17 @@ model ProgressReport {
   tglKondisi               String
   substantiveProgressDate  String?
   isNoChange               Boolean  @default(false)
-  noChangeReason           String?
-  noChangeNextPlan         String?
-  ringkasanKemajuan        String?
+  noChangeReason           String?  @db.Text
+  noChangeNextPlan         String?  @db.Text
+  ringkasanKemajuan        String?  @db.Text
   tglBimbinganTerakhir     String?
-  hambatanUtama            String?
-  tindakanBerikutnya       String?
+  hambatanUtama            String?  @db.Text
+  tindakanBerikutnya       String?  @db.Text
   penanggungJawabTindakan  String?
   targetTindakLanjut       String?
   kebutuhanBantuanProdi    Boolean  @default(false)
-  kebutuhanBantuanCatatan  String?
-  attachmentsJson          String?
+  kebutuhanBantuanCatatan  String?  @db.Text
+  attachmentsJson          String?  @db.Text
   isRetrospektif           Boolean  @default(false)
   createdAt                DateTime @default(now())
 
@@ -176,12 +176,12 @@ model ProgressReport {
 model FollowUpAction {
   id                    String   @id @default(cuid())
   studentId             String
-  masalah               String
-  tindakanDisepakati    String
+  masalah               String   @db.Text
+  tindakanDisepakati    String   @db.Text
   penanggungJawab       String
   tenggat               String
   status                String   @default("terbuka") // terbuka, sedang_ditangani, selesai
-  hasilTindakLanjut     String?
+  hasilTindakLanjut     String?  @db.Text
   tglEvaluasiBerikutnya String?
   createdByName         String
   resolvedAt            String?
@@ -195,7 +195,7 @@ model Attachment {
   id             String   @id @default(cuid())
   studentId      String
   fileName       String
-  fileUrl        String
+  fileUrl        String   @db.Text
   fileType       String?
   fileSize       Int?
   uploadedByName String
@@ -210,7 +210,7 @@ model Notification {
   userId     String?
   targetRole String?  // ALL, ADMIN, KAPRODI, DOSEN, or specific userId
   title      String
-  message    String
+  message    String   @db.Text
   type       String   // reminder, overdue, assistance_request, follow_up, info
   linkUrl    String?
   isRead     Boolean  @default(false)
@@ -220,8 +220,8 @@ model Notification {
 model Setting {
   id          String   @id @default(cuid())
   key         String   @unique
-  value       String
-  description String?
+  value       String   @db.Text
+  description String?  @db.Text
   updatedAt   DateTime @updatedAt
 }
 
@@ -233,8 +233,8 @@ model AuditLog {
   action         String   // CREATE, UPDATE, DELETE, IMPORT, EXPORT, REPORT, LOGIN
   entity         String   // Student, Lecturer, Report, Setting, FollowUp, User
   entityId       String?
-  details        String?
-  alasanPerubahan String?
+  details        String?  @db.Text
+  alasanPerubahan String? @db.Text
   ipAddress      String?
   createdAt      DateTime @default(now())
 

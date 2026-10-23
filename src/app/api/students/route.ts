@@ -115,6 +115,7 @@ export async function GET(req: NextRequest) {
         pembimbingPendamping: true,
         stages: true,
         chapters: true,
+        reports: { orderBy: { createdAt: 'desc' } },
         followUps: {
           where: { status: { in: ['terbuka', 'sedang_ditangani'] } },
         },

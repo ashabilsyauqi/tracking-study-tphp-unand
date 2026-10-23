@@ -73,7 +73,7 @@ export default function Sidebar({ userRole }: Props) {
       title: '8. Pengaturan',
       href: '/pengaturan',
       icon: Settings,
-      roles: ['ADMIN'], // Only Administrator
+      roles: ['ADMIN', 'KAPRODI'], // Administrator & Kaprodi
     },
     {
       title: '9. Panduan Penggunaan',

@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'KAPRODI')) {
       return NextResponse.json({ error: 'Hanya Administrator yang dapat menambah dosen.' }, { status: 403 });
     }
 
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'KAPRODI')) {
       return NextResponse.json({ error: 'Hanya Administrator yang dapat mengubah data dosen.' }, { status: 403 });
     }
 

@@ -149,7 +149,7 @@ export default function DosenPage() {
               </p>
             </div>
 
-            {currentUser?.role === 'ADMIN' && (
+            {(currentUser?.role === 'ADMIN' || currentUser?.role === 'KAPRODI') && (
               <button
                 onClick={openAdd}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-unand-800 hover:bg-unand-900 text-white rounded-xl text-xs font-semibold shadow-xs transition"
@@ -244,7 +244,7 @@ export default function DosenPage() {
                             <Users className="w-3.5 h-3.5" />
                           </Link>
 
-                          {currentUser?.role === 'ADMIN' && (
+                          {(currentUser?.role === 'ADMIN' || currentUser?.role === 'KAPRODI') && (
                             <button
                               onClick={() => openEdit(lec)}
                               className="p-1.5 bg-unand-800 hover:bg-unand-900 text-white rounded-lg transition"

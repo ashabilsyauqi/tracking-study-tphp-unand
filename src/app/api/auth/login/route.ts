@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
 
     // Fast-login feature for convenient testing and role switching
     if (quickLoginUserId) {
-      user = await prisma.user.findUnique({
-        where: { id: quickLoginUserId },
+      user = await prisma.user.findFirst({
+        where: { OR: [{ id: quickLoginUserId }, { lecturerId: quickLoginUserId }], isActive: true },
         include: { lecturer: true },
       });
     } else if (quickLoginRole) {

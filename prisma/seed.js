@@ -1264,6 +1264,7 @@ async function main() {
     update: {
       name: "Ketua Prodi / Tim Pemantauan Studi TPHP",
       email: "kaprodi.tphp@ae.unand.ac.id",
+      lecturerId: lecturerMap[1].id,
       role: "KAPRODI"
     },
     create: {
@@ -1271,6 +1272,7 @@ async function main() {
       password: kaprodiPasswordHash,
       name: "Ketua Prodi / Tim Pemantauan Studi TPHP",
       email: "kaprodi.tphp@ae.unand.ac.id",
+      lecturerId: lecturerMap[1].id,
       role: "KAPRODI",
       isActive: true
     }

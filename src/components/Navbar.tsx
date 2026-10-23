@@ -150,7 +150,7 @@ export default function Navbar({ user, onUserSwitch }: Props) {
                     {lecturersList.map((lec) => (
                       <button
                         key={lec.id}
-                        onClick={() => switchAccount('DOSEN', undefined)}
+                        onClick={() => switchAccount('DOSEN', lec.id)}
                         className="w-full text-left px-3 py-1.5 hover:bg-emerald-50 flex items-center justify-between text-slate-700"
                       >
                         <span className="truncate pr-2">{lec.namaGelar}</span>
